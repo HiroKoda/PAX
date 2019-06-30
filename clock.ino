@@ -1,5 +1,5 @@
 int i;
-int SpeakerPin = 4;
+int SpeakerPin = 3;
 int flag = 0;
 
 #define BEATTIME 310 
@@ -14,7 +14,8 @@ int flag = 0;
 void setup() {
  Serial.begin(9600);
  pinMode(2,INPUT);
- pinMode(3,OUTPUT);
+ pinMode(4,INPUT);
+ pinMode(5,OUTPUT);
  pinMode(SpeakerPin, OUTPUT);
 
 }
@@ -86,16 +87,17 @@ tone(PIN,RE,BEATTIME) ; // レ
 }
 
 void loop(){
-  int val = digitalRead(2);
-  if(val == 1){
-   digitalWrite(3,1);
+  int trig = digitalRead(4);
+  int lead = digitalRead(2);
+  if(trig == 0 && lead == 0){
+   digitalWrite(5,1);
    if(flag == 0){
      mario_1up();
 //   famima(); 
      flag = 1;  
    }  
   } else{
-  digitalWrite(3,0);
+  digitalWrite(5,0);
   flag = 0;
   }
 
