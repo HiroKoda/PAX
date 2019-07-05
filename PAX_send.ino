@@ -39,7 +39,8 @@ void setup() {
   Serial.begin(115200);
 //  Serial1.begin(115200);
   Wire.begin(21,22);
-  pinMode(13,INPUT);
+  pinMode(12,INPUT);
+  pinMode(14,INPUT);
   Serial.println("BLE_DataServer180130");
   BLEDevice::init(SERVER_NAME);
   BLEServer *pServer = BLEDevice::createServer();
@@ -69,8 +70,8 @@ void loop() {
 //    value=map(sensorValue, 0, 4095, 0, 1100);
 //　  sprintf(buffer, "%d", sensorValue);
 
-    a_distance();
-//      button();
+//    a_distance();
+     button();
     
     value = ans;
 //    Serial.write(value);
@@ -114,10 +115,11 @@ void b_distance() {
 }
 
 void button(){
-  if(digitalRead(13) == HIGH){
+  if(digitalRead(12) == HIGH){
     ans = 1;
-  } else{
-    ans = 0;
+  } else if(digitalRead(14) == HIGH){
+    ans = 2;
+     } else{
+        ans = 0;
   }
 }
-

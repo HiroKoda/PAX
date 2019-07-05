@@ -3,6 +3,9 @@
  
 #include "BLEDevice.h"
 #include "Wire.h"
+#include "ESP32Servo.h"
+#include "esp_system.h"
+
 //#include <Ticker.h>
 //#include <SoftwareSerial.h>
 //SoftwareSerial mySerial(10, 11); // RX, TX
@@ -11,18 +14,21 @@
 #define CHARACTERISTIC_UUID "66315508-1570-47db-b6c6-84a952b860d4"
 #define SERVER_NAME         "esp32devc"
 
-#define LEDC_CHANNEL_0 0
-//use 10 bit precission for LEDC timer
-#define LEDC_TIMER_BIT 10
-//use 50 Hz as a LEDC base frequency
-#define LEDC_BASE_FREQ 50
-//ServoPWM pin
-#define SRV_PIN 13
- 
+Servo myservo;
+//Servo miniservo;
+//#define LEDC_CHANNEL_0 0
+////use 10 bit precission for LEDC timer
+//#define LEDC_TIMER_BIT 10
+////use 50 Hz as a LEDC base frequency
+//#define LEDC_BASE_FREQ 50
+////ServoPWM pin
+//#define SRV_PIN 25
+
+int servoPin = 25;
+int miniservoPin = 26;
+
 static BLEUUID  serviceUUID(SERVICE_UUID);
 static BLEUUID  charUUID(CHARACTERISTIC_UUID);
- 
- 
 static BLEAddress *pServerAddress;
 static boolean doConnect = false;
 static boolean connected = false;
@@ -31,10 +37,11 @@ int flag = 0; //フラグを立てる
 volatile int16_t axRaw_i = 0, ayRaw_i = 0 , azRaw_i = 0 ; //初期設定加速度
 volatile int16_t axRaw, ayRaw, azRaw ;
 volatile int mal = 0;
+int pos = 0;
 int val = 0;
 int aaa;
 int bbb;
- 
+
 //Ticker tick;
  
 static void notifyCallback(
@@ -128,10 +135,12 @@ void setup() {
   Wire.write(0x05);
   Wire.endTransmission();
 
- ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_BIT);
- ledcAttachPin(SRV_PIN, LEDC_CHANNEL_0);
+// ledcSetup(LEDC_CHANNEL_0, LEDC_BASE_FREQ, LEDC_TIMER_BIT);
+// ledcAttachPin(SRV_PIN, LEDC_CHANNEL_0);
 // ledcWrite(0, 70);
-//  tick.attach_ms(100, acceleration);
+  myservo.setPeriodHertz(50);    
+  myservo.attach(servoPin, 800, 5000); 
+ 
 }
  
  
@@ -174,8 +183,9 @@ void loop() {
     digitalWrite(4,HIGH);
 //    acceleration();
     digitalWrite(4,LOW);
-    
-    if(strNum <= 20 && aaa == 0){
+//    
+//    if(strNum <= 20 && aaa == 0){
+      if(strNum == 1){
 //       digitalWrite(17,LOW); //ロック解除
 //       digitalWrite(16,HIGH);
        aaa = 1;
@@ -185,13 +195,15 @@ void loop() {
       delay(20);
      digitalWrite(13,LOW); 
      digitalWrite(12,LOW);  
-      ledcWrite(0, 130);
+      //ledcWrite(0, 130);
        
        
-      } else if(strNum >20 && mal == 0 && aaa == 1){
+//      } else if(strNum >20 && mal == 0 && aaa == 1){
+        } else if(strNum == 0){
 //        digitalWrite(16,LOW); //ロック施錠
 //        digitalWrite(17,HIGH);
         aaa = 0;
+        bbb = 0;
 
      digitalWrite(13,LOW); //バッテリーロック解除
      digitalWrite(12,HIGH);
@@ -199,22 +211,12 @@ void loop() {
      digitalWrite(13,LOW); 
      digitalWrite(12,LOW);  
      
-    ledcWrite(0, 30);
+   // ledcWrite(0, 30);
      
-       }
-// if(bbb == 0){  
-//   if(aaa == 1 && val == 1){ 
-//  val = 0;
-//  aaa = 0;
-//  bbb = 1;
-//  } else if(aaa == 1 && val == 0){
-//  val = 1;
-//  aaa = 0;
-//  bbb = 1;
-//   }
-// } else{
-//  aaa = 1;
-//  }
+       } else if(strNum == 2){
+        aaa = 2; 
+        }
+
   
 // if(val == 0 && bbb == 1){
 //  
@@ -238,7 +240,7 @@ void loop() {
 //   delay(1500);
 // }
 // bbb = 0;
-
+satsuei();
   } else{
 //    Serial.println("Not connected");
     doConnect = true;
@@ -281,24 +283,42 @@ void acceleration() {
       }
 }
 
-//void satsuei(){
-//  if(aaa == 1 && val == 1){ 
-//  val = 0;
-//  aaa = 0;
-//  bbb = 1;
-//  } else if(aaa == 1 && val == 0){
-//  val = 1;
-//  aaa = 0;
-//  bbb = 1;
-//   } else{
-//  aaa = 1;
-//  }
-//  
-// if(val == 0 && bbb == 1){
-//  ledcWrite(0, 135); 
-// } else if(val == 1 && bbb == 1){
-//  ledcWrite(0, 20);  
-// }
-// bbb = 0;
-//
-//}
+void satsuei(){
+  if(aaa == 1 && val == 1 && bbb == 0){ 
+  val = 0;
+  bbb = 1;
+ myservo.attach(servoPin, 800, 5000);
+  for (pos = 0; pos <= 220; pos += 1) { 
+    myservo.write(pos);   
+    delay(15);             
+  }
+  Serial.println("Right");
+  
+  } else if(aaa == 1 && val == 0 && bbb == 0){
+  val = 1;
+  bbb = 1;
+ myservo.attach(servoPin, 800, 5000);
+  for (pos = 220; pos >= 0; pos -= 1) {  
+    myservo.write(pos);    
+    delay(15);             
+  }
+  Serial.println("Left");
+   } 
+
+//  if(aaa == 2 && val == 1 && bbb == 0){
+//    val = 0;
+//    bbb = 1;
+//    myservo.attach(miniservoPin, 800, 5000);
+//    for (pos = 0; pos <= 180; pos += 1) { 
+//      myservo.write(pos);   
+//      delay(2);             
+//    }
+//  } else if(aaa == 2 && val == 0 && bbb == 0)
+//      val = 1;
+//      bbb = 1;
+//     myservo.attach(miniservoPin, 800, 5000);
+//      for (pos = 180; pos >= 0; pos -= 1) {  
+//        myservo.write(pos);    
+//        delay(15);             
+//       }
+ }      
