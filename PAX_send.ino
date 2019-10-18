@@ -115,7 +115,7 @@ void b_distance() {
 }
 
 void button(){
-  if(digitalRead(12) == HIGH){
+  if(digitalRead(13) == HIGH){
     ans = 1;
   } else if(digitalRead(14) == HIGH){
     ans = 2;

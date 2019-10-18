@@ -24,8 +24,8 @@ Servo myservo;
 ////ServoPWM pin
 //#define SRV_PIN 25
 
-int servoPin = 25;
-int miniservoPin = 26;
+int servoPin = 15;
+//int miniservoPin = 26;
 
 static BLEUUID  serviceUUID(SERVICE_UUID);
 static BLEUUID  charUUID(CHARACTERISTIC_UUID);
@@ -41,7 +41,7 @@ int pos = 0;
 int val = 0;
 int aaa;
 int bbb;
-
+ 
 //Ticker tick;
  
 static void notifyCallback(
@@ -106,7 +106,7 @@ void setup() {
   pinMode(17,OUTPUT);
   pinMode(4,OUTPUT);
   Serial.begin(115200);
-  Wire.begin(21,22);
+// Wire.begin(21,22);
 //  Serial.println("BLE_DataClient180130");
   BLEDevice::init("");
   BLEScan* pBLEScan = BLEDevice::getScan();
@@ -140,11 +140,14 @@ void setup() {
 // ledcWrite(0, 70);
   myservo.setPeriodHertz(50);    
   myservo.attach(servoPin, 800, 5000); 
+  ledcSetup(0, 50, 10);  // 0ch 50 Hz 10bit resolution
+  ledcAttachPin(15, 0); // 15pin, 0ch
  
 }
  
  
 void loop() {
+ 
 //  Wire.beginTransmission(0x68);
 //  Wire.write(0x3B);
 //  Wire.endTransmission();
@@ -240,7 +243,9 @@ void loop() {
 //   delay(1500);
 // }
 // bbb = 0;
-satsuei();
+
+ satsuei();      
+
   } else{
 //    Serial.println("Not connected");
     doConnect = true;
@@ -287,22 +292,33 @@ void satsuei(){
   if(aaa == 1 && val == 1 && bbb == 0){ 
   val = 0;
   bbb = 1;
- myservo.attach(servoPin, 800, 5000);
-  for (pos = 0; pos <= 220; pos += 1) { 
-    myservo.write(pos);   
-    delay(15);             
-  }
-  Serial.println("Right");
+//  for(int i= 26; i<=123; i=+5){
+//    ledcWrite(0,i);
+//    delay(10);
+//  } 
+
+ ledcWrite(0,52);
+  delay(3000);
+ ledcWrite(0,76);
+ 
+  //Serial.println("Right");
   
   } else if(aaa == 1 && val == 0 && bbb == 0){
   val = 1;
   bbb = 1;
- myservo.attach(servoPin, 800, 5000);
-  for (pos = 220; pos >= 0; pos -= 1) {  
-    myservo.write(pos);    
-    delay(15);             
-  }
-  Serial.println("Left");
+ 
+  ledcWrite(0,100);
+  delay(3000); 
+  ledcWrite(0,76);
+         
+ 
+
+//   for(int j= 123; j>=26; j=-5){
+//    ledcWrite(0,j);
+//    delay(10);
+//  } 
+
+  //Serial.println("Left");
    } 
 
 //  if(aaa == 2 && val == 1 && bbb == 0){
